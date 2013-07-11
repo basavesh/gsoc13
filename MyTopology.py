@@ -46,6 +46,7 @@ class MyTopology (object):
 	3. link: stores info of a link between two switches
 	'''
 	def __init__(self):
+
 		core.listen_to_dependencies(self)
 		self.switches = []
 		self.hosts = {}
@@ -53,10 +54,12 @@ class MyTopology (object):
 
 
 	def add_host(self,MAC, IP = None, to_switch = None, to_port = None):
+
 		self.hosts[MAC] = {}
 		self.hosts[MAC]['IP'] = IP
 		self.hosts[MAC]['to_switch'] = to_switch
 		self.hosts[MAC]['to_port'] = to_port
+
 
 	def update_host(self, MAC, IP = None, to_switch = None, to_port = None):
 		
@@ -64,19 +67,25 @@ class MyTopology (object):
 		self.hosts[MAC]['to_switch'] = to_switch
 		self.hosts[MAC]['to_port'] = to_port
 
+
 	def update_IP(self, MAC, IP):
+
 		self.hosts[MAC]['IP'] = IP
+
 
 	def  del_host(self, MAC):
 		del self.hosts[MAC]
+
 
 	def add_switch(self, dpid):
 		
 		self.switches.append(dpid)
 
+
 	def del_switch(self, dpid):
 
 		self.switches.remove(dpid)		
+
 
 	def add_link(self, dpid1, port1, dpid2, port2):
 	
@@ -88,8 +97,6 @@ class MyTopology (object):
 	def del_link(self, dpid1, dpid2):
 
 		del self.links[(dpid1,dpid2)]
-		
-
 
 
 	def _handle_host_tracker_HostEvent(self, event):
@@ -114,20 +121,20 @@ class MyTopology (object):
 		if event.added == True:
 			
 			if event.link.dpid1 not in self.switches:
-				self.add_switch(dpid1)
+				self.add_switch(event.link.dpid1)
 
 			if event.link.dpid2 not in self.switches:
-				self.add_switch(dpid2)
+				self.add_switch(event.link.dpid2)
 
 			self.add_link(event.link.dpid1, event.link.port1, event.link.dpid2, event.link.port2)
 
 		if event.removed == True:
 
 			if event.link.dpid1 in self.switches:
-				self.del_switch(dpid1)
+				self.del_switch(event.link.dpid1)
 
 			if event.link.dpid2 in self.switches:
-				self.del_switch(dpid2)
+				self.del_switch(event.link.dpid2)
 
 			self.del_link(event.link.dpid1, event.link.dpid2)
 			
@@ -147,8 +154,6 @@ class MyTopology (object):
 		if isinstance(packet.next, arp):
 			if (packet.next.hwtype == arp.HW_TYPE_ETHERNET and packet.next.prototype == arp.PROTO_TYPE_IP and packet.next.protosrc != 0):
 				self.update_IP(packet.src, packet.next.protosrc)
-
-
 
 
 
