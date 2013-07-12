@@ -14,6 +14,10 @@
 '''
 This script collects Topology information from Floodlight controller 
 using REST API
+
+Execute this python script in the machine where Floodlight is running
+or change the controllerIP and port accordingly
+
 '''
 
 import os 				# OS Calls
