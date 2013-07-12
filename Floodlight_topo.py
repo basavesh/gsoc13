@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+'''
+This script collects Topology information from Floodlight controller 
+using REST API
+'''
 
 import os 				# OS Calls
 import sys 				# System Calls
