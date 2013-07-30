@@ -23,9 +23,45 @@ or change the controllerIP and port accordingly
 import os 				# OS Calls
 import sys 				# System Calls
 import json				# To convert to and fro from json to python objects
+import struct 
 
 controllerIP = 'localhost'		 # 
 cport = '8080'
+
+def dpid_to_str (dpid, alwaysLong = False):
+  """
+  Convert a DPID from a long into into the canonical string form.
+  """
+  if type(dpid) is long or type(dpid) is int:
+    # Not sure if this is right
+    dpid = struct.pack('!Q', dpid)
+
+  assert len(dpid) == 8
+
+  r = '-'.join(['%02x' % (ord(x),) for x in dpid[2:]])
+
+  if alwaysLong or dpid[0:2] != (b'\x00'*2):
+    r += '|' + str(struct.unpack('!H', dpid[0:2])[0])
+
+  return r
+
+def str_to_dpid (s):
+  """
+  Convert a DPID in the canonical string form into a long int.
+  """
+  if s.lower().startswith("0x"):
+    s = s[2:]
+  s = s.replace("-", "").split("|", 2)
+  a = int(s[0], 16)
+  if a > 0xffFFffFFffFF:
+    b = a >> 48
+    a &= 0xffFFffFFffFF
+  else:
+    b = 0
+  if len(s) == 2:
+    b = int(s[1])
+  return a | (b << 48)
+
 
 class MyTopology (object):
 	'''
@@ -36,9 +72,11 @@ class MyTopology (object):
 	'''
 	def __init__(self):
 
-		self.switches = []
+		self.switches = {}
 		self.hosts = {}
 		self.links = {}
+		self.host_counter = 0
+		self.switch_counter = 0
 
 
 	def add_host(self,MAC, IP = None, to_switch = None, to_port = None):
@@ -47,6 +85,9 @@ class MyTopology (object):
 		self.hosts[MAC]['IP'] = IP
 		self.hosts[MAC]['to_switch'] = to_switch
 		self.hosts[MAC]['to_port'] = to_port
+
+		self.host_counter += 1
+		self.hosts[MAC]['name'] = 'h{}'.format(self.host_counter)
 
 
 	def update_host(self, MAC, IP = None, to_switch = None, to_port = None):
@@ -67,19 +108,23 @@ class MyTopology (object):
 
 	def add_switch(self, dpid):
 		
-		self.switches.append(dpid)
+		self.switch_counter += 1
+
+		self.switches[dpid] = {}
+		self.switches[dpid]['name'] = 's{}'.format(self.switch_counter)
 
 
 	def del_switch(self, dpid):
 
-		self.switches.remove(dpid)		
+		del self.switches[dpid]		
 
 
 	def add_link(self, dpid1, port1, dpid2, port2):
 	
-		self.links[(dpid1,dpid2)] = {}
-		self.links[(dpid1,dpid2)]['src_port'] = port1
-		self.links[(dpid1,dpid2)]['dst_port'] = port2
+		if (dpid2,dpid1) not in self.links:
+			self.links[(dpid1,dpid2)] = {}
+			self.links[(dpid1,dpid2)]['src_port'] = port1
+			self.links[(dpid1,dpid2)]['dst_port'] = port2
 		
 
 	def del_link(self, dpid1, dpid2):
@@ -112,7 +157,8 @@ for i in range(len(switches)):
 
 print "\nSwitches are: "
 for switch in topology.switches:
-	print switch
+	
+	print topology.switches[switch]['name'], switch
 
 #################################end #######################################
 
@@ -139,6 +185,7 @@ for i in range(len(hosts)):
 				
 print "\nHosts are: "
 for host in topology.hosts:
+	print "Name: {}".format(topology.hosts[host]['name'])
 	print "MAC: {}".format(host)
 	print "IP: {}".format(topology.hosts[host]['IP'])
 	print "to_switch: {}".format(topology.hosts[host]['to_switch'])
@@ -165,4 +212,43 @@ for i in range(len(links)):
 for link in topology.links:
 	print "{} --> {} {}".format(link[0],link[1],topology.links[link])
 ############################# end ##########################################
+
+
+
+
+
+# try to create a simple mininet topo file
+
+f = open('test.py', 'w')
+
+f.write("from mininet.topo import Topo\n\n")
+f.write("class MyTopo( Topo ):\n")
+f.write("\t'Trying to create a Mininet File'\n")
+
+f.write("\n\tdef __init__( self ):\n")
+
+
+f.write("\n\t\tTopo.__init__( self )\n")
+f.write("\t\t# Initialize topology\n\n")
+
+f.write("\t\t# Add hosts\n")
+for host in topology.hosts:
+	f.write("\t\t{} = self.addHost('{}')\n".format(topology.hosts[host]['name'],topology.hosts[host]['name']))
+
+f.write("\n")
+
+f.write("\t\t# Add switches\n")
+for switch in topology.switches:
+	f.write("\t\t{} = self.addSwitch('{}')\n".format(topology.switches[switch]['name'],topology.switches[switch]['name']))
+
+f.write("\n\t\t# Add links\n")
+for link in topology.links:
+	f.write("\t\tself.addLink( {}, {} )\n".format(topology.switches[link[0]]['name'],topology.switches[link[1]]['name']))
+
+f.write("\n\n")
+for host in topology.hosts:
+	f.write("\t\tself.addLink( {}, {} )\n".format(topology.hosts[host]['name'], topology.switches[topology.hosts[host]['to_switch']]['name']))
+
+f.write("\n\ntopos = { 'mytopo': ( lambda: MyTopo() ) }")
+f.close()
 
