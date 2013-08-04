@@ -28,40 +28,6 @@ import struct
 controllerIP = 'localhost'		 # 
 cport = '8080'
 
-def dpid_to_str (dpid, alwaysLong = False):
-  """
-  Convert a DPID from a long into into the canonical string form.
-  """
-  if type(dpid) is long or type(dpid) is int:
-    # Not sure if this is right
-    dpid = struct.pack('!Q', dpid)
-
-  assert len(dpid) == 8
-
-  r = '-'.join(['%02x' % (ord(x),) for x in dpid[2:]])
-
-  if alwaysLong or dpid[0:2] != (b'\x00'*2):
-    r += '|' + str(struct.unpack('!H', dpid[0:2])[0])
-
-  return r
-
-def str_to_dpid (s):
-  """
-  Convert a DPID in the canonical string form into a long int.
-  """
-  if s.lower().startswith("0x"):
-    s = s[2:]
-  s = s.replace("-", "").split("|", 2)
-  a = int(s[0], 16)
-  if a > 0xffFFffFFffFF:
-    b = a >> 48
-    a &= 0xffFFffFFffFF
-  else:
-    b = 0
-  if len(s) == 2:
-    b = int(s[1])
-  return a | (b << 48)
-
 
 class MyTopology (object):
 	'''
@@ -233,7 +199,12 @@ f.write("\t\t# Initialize topology\n\n")
 
 f.write("\t\t# Add hosts\n")
 for host in topology.hosts:
-	f.write("\t\t{} = self.addHost('{}')\n".format(topology.hosts[host]['name'],topology.hosts[host]['name']))
+	if topology.hosts[host]['name'] is None:
+		f.write("\t\t{} = self.addHost('{}', mac = '{}')\n".format(topology.hosts[host]['name'],topology.hosts[host]['name'], host))
+
+	else:
+		f.write("\t\t{} = self.addHost('{}', ip = '{}', mac = '{}' )\n".format(topology.hosts[host]['name'],topology.hosts[host]['name'], topology.hosts[host]['IP'], host))
+
 
 f.write("\n")
 
@@ -243,11 +214,12 @@ for switch in topology.switches:
 
 f.write("\n\t\t# Add links\n")
 for link in topology.links:
-	f.write("\t\tself.addLink( {}, {} )\n".format(topology.switches[link[0]]['name'],topology.switches[link[1]]['name']))
+	f.write("\t\tself.addLink( {}, {}, {}, {} )\n".format(topology.switches[link[0]]['name'],topology.switches[link[1]]['name'], topology.links[link]['src_port'], topology.links[link]['dst_port'] ))
 
 f.write("\n\n")
 for host in topology.hosts:
-	f.write("\t\tself.addLink( {}, {} )\n".format(topology.hosts[host]['name'], topology.switches[topology.hosts[host]['to_switch']]['name']))
+	f.write("\t\tself.addLink( {}, {}, 1, {} )\n".format(topology.hosts[host]['name'], topology.switches[topology.hosts[host]['to_switch']]['name'], topology.hosts[host]['to_port']))
+
 
 f.write("\n\ntopos = { 'mytopo': ( lambda: MyTopo() ) }")
 f.close()
