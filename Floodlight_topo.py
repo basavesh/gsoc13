@@ -24,6 +24,7 @@ import os 				# OS Calls
 import sys 				# System Calls
 import json				# To convert to and fro from json to python objects
 import struct 
+import requests
 
 controllerIP = 'localhost'		 # 
 cport = '8080'
@@ -107,15 +108,15 @@ topology = MyTopology() # Created an empty instance of Mytopology
 
 ######################## get list of all switches ##########################
 try:
-	command = 'curl -s http://'+controllerIP+ \
+	command = 'http://'+controllerIP+ \
 	          ':'+cport+'/wm/core/controller/switches/json'
 
 except Exception:
 	print "make sure that the controller is running"
 	sys.exit()
 
-data  = os.popen(command).read()
-switches = json.loads(data)
+r = requests.get(command)
+switches = json.loads(r.content)
 
 for i in range(len(switches)):
 	switch_dpid = switches[i]['dpid']
@@ -129,9 +130,9 @@ for switch in topology.switches:
 #################################end #######################################
 
 ####################### get list of end devices ############################
-command = 'curl -s http://'+controllerIP+ ':'+cport+'/wm/device/'
-data  = os.popen(command).read()
-hosts = json.loads(data)
+command = 'http://'+controllerIP+ ':'+cport+'/wm/device/'
+r = requests.get(command)
+hosts = json.loads(r.content)
 for i in range(len(hosts)):
 	if len(hosts[i]['attachmentPoint']) > 0:
 		
@@ -164,9 +165,9 @@ for host in topology.hosts:
 
 
 ################## get list of links #######################################
-command = 'curl -s http://'+controllerIP+ ':'+cport+'/wm/topology/links/json'
-data  = os.popen(command).read()
-links = json.loads(data)
+command = 'http://'+controllerIP+ ':'+cport+'/wm/topology/links/json'
+r = requests.get(command)
+links = json.loads(r.content)
 
 for i in range(len(links)):
 	src_switch = links[i]['src-switch']
