@@ -52,12 +52,13 @@ def main():
 
 	ofh.write("\t\t# Add hosts\n")
 	for host in data['hosts']:
-		if data['hosts'][host]['name'] is None:
+		if data['hosts'][host]['IP'] is None:
+			
 			ofh.write("\t\t{} = self.addHost('{}', mac = '{}')\n".format(data['hosts'][host]['name'],data['hosts'][host]['name'], host))
 
 		else:
 			ofh.write("\t\t{} = self.addHost('{}', ip = '{}', mac = '{}' )\n".format(data['hosts'][host]['name'],data['hosts'][host]['name'], data['hosts'][host]['IP'], host))
-
+			
 
 	ofh.write("\n")
 
