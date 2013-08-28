@@ -102,7 +102,7 @@ class MyTopology (object):
 def main(): 		
 
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "o:", ["output="])
+		opts, args = getopt.getopt(sys.argv[1:], "o:", ["output=","ip=","port="])
 	except getopt.GetoptError as err:
 		print str(err) # will print something like "option -a not recognized"
 		sys.exit(2)
@@ -113,6 +113,12 @@ def main():
             
 		if o in ("-o", "--output"):
 			outfile = a
+
+		elif o == "--ip":
+			controllerIP = a
+
+		elif o == "--port":
+			cport = a
 
 		else:
 			assert False, "unhandled option"
