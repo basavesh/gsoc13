@@ -28,8 +28,7 @@ import requests
 import pickle
 import getopt
 
-controllerIP = 'localhost'		 # 
-cport = '8080'
+
 
 
 class MyTopology (object):
@@ -108,6 +107,9 @@ def main():
 		sys.exit(2)
 
 	outfile = 'jsondata.txt'
+	controllerIP = 'localhost'	
+	cport = '8080'
+
 
 	for o, a in opts:
             
