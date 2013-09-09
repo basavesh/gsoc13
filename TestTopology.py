@@ -38,8 +38,17 @@ from pox.lib.revent import Event, EventHalt
 import json
 import os, sys
 import getopt
+from threading import Timer
+from time import sleep
+from pox.lib.recoco import Timer
+
 
 log = core.getLogger()
+
+outfile = 'jsondata.txt'
+
+stop_condition = False
+data = {}
 
 		
 class MyTopology (object):
@@ -131,10 +140,10 @@ class TestTopology(object):
 		'''
 
 		if event.join == True:
-			topology.add_host(str(event.entry.macaddr),None,event.entry.dpid,event.entry.port)
+			topology.add_host(str(event.entry.macaddr),None,str(event.entry.dpid),event.entry.port)
 
 		elif event.move == True:
-			topology.update_host(str(event.entry.macaddr),None,event.entry.dpid,event.entry.port)	
+			topology.update_host(str(event.entry.macaddr),None,str(event.entry.dpid),event.entry.port)	
 
 		elif event.leave == True:
 			topology.del_host(str(event.entry.macaddr))
@@ -182,16 +191,27 @@ class TestTopology(object):
 				topology.update_IP(str(packet.src), str(packet.next.protosrc))
 
 
+def update_file ():
+	if stop_condition: return False
+
+	data['switches'] = topology.switches
+
+	data['hosts'] = topology.hosts
+	data['links'] = topology.links
+
+	f = open(outfile,'w')
+	json.dump(data, f)
+	f.close()
+
+  	print "Updated {} file".format(outfile)
+
+
 
 
 def launch(**kw):
 
-
-
-	for k,v in kw.iteritems():
-		print k,v
-
 	core.registerNew(TestTopology)
+	Timer(30, update_file, recurring = True)
 
 
 
