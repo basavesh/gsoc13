@@ -61,9 +61,9 @@ class MyTopology (object):
 	def __init__(self):
 
 		#core.listen_to_dependencies(self)
-		self.switches = {}
-		self.hosts = {}
-		self.links = {}
+		self.switches = {}					# stores information about switches
+		self.hosts = {}						# stores infor like MAC, IP, to_switch and to_port
+		self.links = {}						# stores info about link between switches (DPID + port no)
 		self.host_counter = 0
 		self.host_counter = 0
 		self.switch_counter = 0
@@ -216,6 +216,7 @@ def update_file ():
 	f.close()
 
   	print "Updated {} file".format(outfile)
+
 
 
 
