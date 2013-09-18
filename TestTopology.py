@@ -196,7 +196,19 @@ def update_file ():
 
 	data['switches'] = topology.switches
 
-	data['hosts'] = topology.hosts
+	
+	# having problems with hosts with no IP.. so remove them
+	removehosts = []
+	hosts_with_IP = {}
+	for host in topology.hosts:
+		if topology.hosts[host]['IP'] == None:
+			removehosts.append(host)
+
+	hosts_with_IP = topology.hosts		
+	for host in removehosts:
+		 del hosts_with_IP[host]
+
+	data['hosts'] = hosts_with_IP
 	data['links'] = topology.links
 
 	f = open(outfile,'w')
