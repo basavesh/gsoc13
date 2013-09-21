@@ -18,9 +18,9 @@ HostEvent event raisers of pox's carp branch.
 
 To run this module:
 use carp branch of pox and place this MyTopology file in ext folder 
-execute './pox.py samples.httopo MyTopology'
+execute './pox.py openflow.discovery --eat-early-packets=True forwarding.l2_learning host_tracker TestTopology'
 
-NOTE: still under development
+
 '''
 
 from pox.core import core
@@ -60,7 +60,6 @@ class MyTopology (object):
 	'''
 	def __init__(self):
 
-		#core.listen_to_dependencies(self)
 		self.switches = {}
 		self.hosts = {}
 		self.links = {}
@@ -70,7 +69,9 @@ class MyTopology (object):
 
 
 	def add_host(self,MAC, IP = None, to_switch = None, to_port = None):
-
+		'''
+		Function to add host to the topology
+		'''
 		self.hosts[MAC] = {}
 		self.hosts[MAC]['IP'] = IP
 		self.hosts[MAC]['to_switch'] = to_switch
@@ -81,22 +82,32 @@ class MyTopology (object):
 
 
 	def update_host(self, MAC, IP = None, to_switch = None, to_port = None):
-		
+		'''
+		Function to update host when host moves from one switch to another or If it's IP address is updated or changed
+		'''
 		self.hosts[MAC]['IP'] = IP
 		self.hosts[MAC]['to_switch'] = to_switch
 		self.hosts[MAC]['to_port'] = to_port
 
 
 	def update_IP(self, MAC, IP):
-
+		'''
+		update ip of the host using MAC
+		'''
 		self.hosts[MAC]['IP'] = IP
 
 
 	def  del_host(self, MAC):
+		'''
+		delete host from the topology
+		'''
 		del self.hosts[MAC]
 
 
 	def add_switch(self, dpid):
+		'''
+		add switch to the topology
+		'''
 		self.switch_counter += 1
 
 		self.switches[dpid] = {}
@@ -104,11 +115,16 @@ class MyTopology (object):
 
 
 	def del_switch(self, dpid):
-
+		'''
+		delete switch from the topology
+		'''
 		del self.switches[dpid]		
 
 
 	def add_link(self, dpid1, port1, dpid2, port2):
+		'''
+		Adds link between two switches to the topology
+		'''
 	
 		if str(dpid2) + ' ' + str(dpid1) not in self.links:
 
@@ -128,7 +144,9 @@ class MyTopology (object):
 topology = MyTopology()
 
 class TestTopology(object):
-
+	'''
+	Class which creates an instance of MyTopology and collects information from pox 
+	'''
 
 	def __init__(self):
 		core.listen_to_dependencies(self)
@@ -136,7 +154,7 @@ class TestTopology(object):
 
 	def _handle_host_tracker_HostEvent(self, event):
 		'''
-		Used to manage Host and its properties
+		to manage Host and its properties
 		'''
 
 		if event.join == True:
@@ -151,7 +169,7 @@ class TestTopology(object):
 
 	def _handle_openflow_discovery_LinkEvent(self, event):
 		'''
-		Used to manage list of switches and links between switches
+		to manage list of switches and links between switches
 		'''
 		if event.added == True:
 			
@@ -176,7 +194,7 @@ class TestTopology(object):
 
 	def _handle_openflow_PacketIn (self, event):
 		'''
-		Used to update IP address.
+		to update IP address.
 		'''
 		packet = event.parsed
 
@@ -192,6 +210,11 @@ class TestTopology(object):
 
 
 def update_file ():
+	'''
+	Function to update the jsondata.txt file every 30 seconds
+	based on the information acquired at that moment
+	'''
+
 	if stop_condition: return False
 
 	data['switches'] = topology.switches
