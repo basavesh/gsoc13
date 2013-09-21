@@ -24,7 +24,7 @@ import os 				# OS Calls
 import sys 				# System Calls
 import json				# To convert to and fro from json to python objects
 import struct 
-import requests
+import requests			# Used to access REST API
 import pickle
 import getopt
 
@@ -48,6 +48,9 @@ class MyTopology (object):
 
 
 	def add_host(self,MAC, IP = None, to_switch = None, to_port = None):
+		'''
+		Function to add host
+		'''
 
 		self.hosts[MAC] = {}
 		self.hosts[MAC]['IP'] = IP
@@ -59,35 +62,49 @@ class MyTopology (object):
 
 
 	def update_host(self, MAC, IP = None, to_switch = None, to_port = None):
-		
+		'''
+		Function to update host when host moves from one switch to another or If it's IP address is updated or changed
+		'''
 		self.hosts[MAC]['IP'] = IP
 		self.hosts[MAC]['to_switch'] = to_switch
 		self.hosts[MAC]['to_port'] = to_port
 
 
 	def update_IP(self, MAC, IP):
-
+		'''
+		update ip of the host using MAC
+		'''
 		self.hosts[MAC]['IP'] = IP
 
 
 	def  del_host(self, MAC):
+		'''
+		delete host from the topology
+		'''
 		del self.hosts[MAC]
 
 
 	def add_switch(self, dpid):
-		
+		'''
+		add switch to the topology
+		'''		
 		self.switch_counter += 1
 
 		self.switches[dpid] = {}
-		self.switches[dpid]['name'] = 's{}'.format(self.switch_counter)
+		self.switches[dpid]['name'] = 's{}'.format(self.switch_counter) # to Identify the switch
 
 
 	def del_switch(self, dpid):
-
+		'''
+		delete switch from the topology
+		'''
 		del self.switches[dpid]		
 
 
 	def add_link(self, dpid1, port1, dpid2, port2):
+		'''
+		Adds link between two switches to the topology
+		'''
 	
 		if str(dpid2) + ' ' + str(dpid1) not in self.links:
 
@@ -110,7 +127,7 @@ def main():
 	controllerIP = 'localhost'	
 	cport = '8080'
 
-
+	# Configuring the options
 	for o, a in opts:
             
 		if o in ("-o", "--output"):
