@@ -18,6 +18,9 @@ import getopt, sys
 import json
 
 def main():
+	'''
+	converts the json formatted topology information into custom mininet topo file.
+	'''
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "i:o:", ["input=", "output="])
 	except getopt.GetoptError as err:
@@ -38,8 +41,8 @@ def main():
 	ofh = open(outfile,'w')
 
 	data = json.load(ifh)
-	#print data
-
+	
+	# creating mininet file 
 	ofh.write("from mininet.topo import Topo\n\n")
 	ofh.write("class MyTopo( Topo ):\n")
 	ofh.write("\t'Trying to create a Mininet File'\n")
@@ -50,6 +53,7 @@ def main():
 	ofh.write("\n\t\tTopo.__init__( self )\n")
 	ofh.write("\t\t# Initialize topology\n\n")
 
+	# commands to add hosts
 	ofh.write("\t\t# Add hosts\n")
 	for host in data['hosts']:
 		if data['hosts'][host]['IP'] is None:
@@ -62,14 +66,17 @@ def main():
 
 	ofh.write("\n")
 
+	# commands to add switches
 	ofh.write("\t\t# Add switches\n")
 	for switch in data['switches']:
 		ofh.write("\t\t{} = self.addSwitch('{}')\n".format(data['switches'][switch]['name'],data['switches'][switch]['name']))
 
+	# commands to add links between switches
 	ofh.write("\n\t\t# Add links\n")
 	for link in data['links']:
 		ofh.write("\t\tself.addLink( {}, {}, {}, {} )\n".format(data['switches'][link.split(' ')[0]]['name'],data['switches'][link.split(' ')[1]]['name'], data['links'][link]['src_port'], data['links'][link]['dst_port'] ))
 
+	# commands to add links between switch and hosts
 	ofh.write("\n\n")
 	for host in data['hosts']:
 		ofh.write("\t\tself.addLink( {}, {}, 1, {} )\n".format(data['hosts'][host]['name'], data['switches'][data['hosts'][host]['to_switch']]['name'], data['hosts'][host]['to_port']))
