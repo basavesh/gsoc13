@@ -60,16 +60,11 @@ class MyTopology (object):
 	'''
 	def __init__(self):
 
-<<<<<<< HEAD
-		self.switches = {}
-		self.hosts = {}
-		self.links = {}
-=======
 		#core.listen_to_dependencies(self)
 		self.switches = {}					# stores information about switches
 		self.hosts = {}						# stores infor like MAC, IP, to_switch and to_port
 		self.links = {}						# stores info about link between switches (DPID + port no)
->>>>>>> 36f1efad3a6088c6b42c49317db9b4791c0736a8
+
 		self.host_counter = 0
 		self.host_counter = 0
 		self.switch_counter = 0
