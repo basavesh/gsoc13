@@ -60,9 +60,16 @@ class MyTopology (object):
 	'''
 	def __init__(self):
 
+<<<<<<< HEAD
 		self.switches = {}
 		self.hosts = {}
 		self.links = {}
+=======
+		#core.listen_to_dependencies(self)
+		self.switches = {}					# stores information about switches
+		self.hosts = {}						# stores infor like MAC, IP, to_switch and to_port
+		self.links = {}						# stores info about link between switches (DPID + port no)
+>>>>>>> 36f1efad3a6088c6b42c49317db9b4791c0736a8
 		self.host_counter = 0
 		self.host_counter = 0
 		self.switch_counter = 0
@@ -219,7 +226,19 @@ def update_file ():
 
 	data['switches'] = topology.switches
 
-	data['hosts'] = topology.hosts
+	
+	# having problems with hosts with no IP.. so remove them
+	removehosts = []
+	hosts_with_IP = {}
+	for host in topology.hosts:
+		if topology.hosts[host]['IP'] == None:
+			removehosts.append(host)
+
+	hosts_with_IP = topology.hosts		
+	for host in removehosts:
+		 del hosts_with_IP[host]
+
+	data['hosts'] = hosts_with_IP
 	data['links'] = topology.links
 
 	f = open(outfile,'w')
@@ -227,6 +246,7 @@ def update_file ():
 	f.close()
 
   	print "Updated {} file".format(outfile)
+
 
 
 
